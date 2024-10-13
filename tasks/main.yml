@@ -1,0 +1,32 @@
+---
+- name: deprecated param
+  fail:
+    msg: 'Warning: param update_lists is deprecated. It will be removed in the next version of the role.'
+  when: not update_lists
+  ignore_errors: true
+
+- name: package installation
+  apt:
+    name: "{{ ipset_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 86400
+
+- name: default and custom ipset lists union
+  set_fact:
+    ext_lists: "{{ ipset_default_lists|union(lists) }}"
+
+- name: ipset.list
+  lineinfile:
+    dest: /etc/network/ipset.list
+    regexp: "^create {{ item.name }}"
+    line: "create {{ item.name }} hash:net family {{ item.family }} hashsize 1024 maxelem 65536"
+    create: yes
+  with_items: "{{ ext_lists }}"
+
+- name: create custom lists
+  include_tasks: custom_list.yml
+  when: list.ips is defined
+  loop: "{{ ext_lists }}"
+  loop_control:
+    loop_var: list

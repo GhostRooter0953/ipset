@@ -1,0 +1,11 @@
+---
+ipset_default_lists:
+  - {name: govnoedes, family: inet}
+
+lists: []
+
+ipset_packages:
+  - ipset
+  - curl
+
+update_lists: true
